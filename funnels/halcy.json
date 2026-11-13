@@ -1,0 +1,260 @@
+{
+  "meta": {
+    "brand": "Halcy",
+    "version": "1.0.0",
+    "market": "US",
+    "abTest": {
+      "flag": "result-screen",
+      "variants": ["chat_preview", "match_score"],
+      "control": "chat_preview"
+    }
+  },
+  "steps": [
+    {
+      "id": "landing",
+      "type": "landing",
+      "time": "2:14 AM",
+      "chat": [
+        { "from": "user", "text": "can't sleep again. didn't want to wake anyone up" },
+        { "from": "ai", "text": "I'm up. Tell me what's keeping you awake. I've got time." }
+      ],
+      "title": "Someone who's glad you texted",
+      "subtitle": "Answer a few questions and meet an AI companion who remembers your day, texts the way you like and moves at your pace.",
+      "cta": "Meet my companion",
+      "note": "18+ only. Halcy is an AI, not a real person. This is a demo funnel, no payments."
+    },
+    {
+      "id": "intent",
+      "type": "single",
+      "title": "What are you looking for?",
+      "subtitle": "No wrong answers. Only you see this.",
+      "options": [
+        { "value": "connection", "label": "Something that feels real", "emoji": "💞" },
+        { "value": "flirty", "label": "Flirty and light, no pressure", "emoji": "😏" },
+        { "value": "daily", "label": "Someone to talk to every day", "emoji": "☕" },
+        { "value": "unsure", "label": "Not sure yet", "emoji": "🤔" }
+      ]
+    },
+    {
+      "id": "age",
+      "type": "single",
+      "title": "How old are you?",
+      "subtitle": "Halcy is for adults only.",
+      "layout": "grid",
+      "options": [
+        { "value": "18-24", "label": "18–24" },
+        { "value": "25-34", "label": "25–34" },
+        { "value": "35-44", "label": "35–44" },
+        { "value": "45+", "label": "45+" }
+      ]
+    },
+    {
+      "id": "partner",
+      "type": "single",
+      "title": "Who would you like to meet?",
+      "options": [
+        { "value": "woman", "label": "A woman" },
+        { "value": "man", "label": "A man" },
+        { "value": "surprise", "label": "Surprise me" }
+      ]
+    },
+    {
+      "id": "traits",
+      "type": "multi",
+      "title": "What should they be like?",
+      "subtitle": "Pick up to 3.",
+      "max": 3,
+      "cta": "Continue",
+      "options": [
+        { "value": "caring", "label": "Caring", "emoji": "🫶" },
+        { "value": "playful", "label": "Playful", "emoji": "😄" },
+        { "value": "confident", "label": "Confident", "emoji": "😎" },
+        { "value": "curious", "label": "Curious", "emoji": "🔍" },
+        { "value": "calm", "label": "Calm", "emoji": "🌊" },
+        { "value": "witty", "label": "Witty", "emoji": "✨" }
+      ]
+    },
+    {
+      "id": "style",
+      "type": "single",
+      "title": "How should they text you?",
+      "options": [
+        { "value": "deep", "label": "Long, thoughtful messages", "emoji": "📝" },
+        { "value": "playful", "label": "Short and playful", "emoji": "💬" },
+        { "value": "mix", "label": "A bit of both", "emoji": "🔀" }
+      ]
+    },
+    {
+      "id": "when",
+      "type": "single",
+      "title": "When would you like to hear from them?",
+      "options": [
+        { "value": "morning", "label": "Good-morning texts", "emoji": "🌅" },
+        { "value": "day", "label": "Check-ins during the day", "emoji": "🏙️" },
+        { "value": "night", "label": "Late at night", "emoji": "🌙" },
+        { "value": "me_first", "label": "Only when I text first", "emoji": "📱" }
+      ]
+    },
+    {
+      "id": "preview",
+      "type": "reward",
+      "title": "Here's how {name} might text you",
+      "subtitle": "Based on what you picked so far.",
+      "cta": "I like it"
+    },
+    {
+      "id": "open_up",
+      "type": "likert",
+      "eyebrow": "Is this you?",
+      "statement": "It's easier for me to open up when no one interrupts me.",
+      "minLabel": "Not me",
+      "maxLabel": "That's me"
+    },
+    {
+      "id": "ask_how",
+      "type": "likert",
+      "eyebrow": "And this?",
+      "statement": "After a long day, I want someone to ask how I am, not what I did.",
+      "minLabel": "Not me",
+      "maxLabel": "That's me"
+    },
+    {
+      "id": "stat",
+      "type": "info",
+      "big": "1 in 2",
+      "headline": "adults in the US say they feel lonely.",
+      "text": "So if you've ever wished someone would just text first, you're in very big company. It's not a weakness. It's how life is set up right now.",
+      "source": "US Surgeon General advisory on loneliness and isolation, 2023",
+      "cta": "Continue"
+    },
+    {
+      "id": "pace",
+      "type": "single",
+      "title": "How fast should things move?",
+      "subtitle": "You can change this anytime.",
+      "options": [
+        { "value": "slow", "label": "Slow. Let's get to know each other", "emoji": "🐢" },
+        { "value": "natural", "label": "However it goes naturally", "emoji": "🌿" },
+        { "value": "flirty", "label": "Flirty from day one", "emoji": "🔥" }
+      ]
+    },
+    {
+      "id": "matching",
+      "type": "loader",
+      "title": "Creating your companion…",
+      "rows": ["Reading your answers", "Tuning how they text", "Finding your match"],
+      "question": {
+        "askAfterRow": 1,
+        "text": "Quick one: should {name} remember details about your day?",
+        "options": [
+          { "value": "yes", "label": "Yes, remember" },
+          { "value": "no", "label": "No, start fresh" }
+        ]
+      }
+    },
+    {
+      "id": "result",
+      "type": "result",
+      "eyebrow": "Your match",
+      "typing": "{name} is typing…",
+      "scoreLabel": "match with your answers",
+      "scoreNote": "Based on your answers about pace, texting style and what you're looking for.",
+      "cta": "Reply to {name}"
+    },
+    {
+      "id": "email",
+      "type": "email",
+      "title": "Where should {name} find you?",
+      "subtitle": "We'll save your companion and your answers, so you don't start from zero.",
+      "placeholder": "you@example.com",
+      "cta": "Save my companion",
+      "error": "This doesn't look like an email. Check for a typo, like name@example.com.",
+      "note": "Demo: your email is not stored anywhere."
+    },
+    {
+      "id": "paywall",
+      "type": "paywall",
+      "title": "{name} is waiting for your reply",
+      "defaultPlan": "month",
+      "plans": [
+        { "id": "week", "label": "1 week", "price": "$6.99", "sub": "then $19.99 / month" },
+        { "id": "month", "label": "1 month", "price": "$19.99", "sub": "$0.67 per day", "badge": "Most picked" },
+        { "id": "quarter", "label": "3 months", "price": "$39.99", "sub": "$0.44 per day", "badge": "Save 33%" }
+      ],
+      "cta": "Start talking",
+      "cancelNote": "Cancel anytime in settings. No questions asked.",
+      "faq": [
+        { "q": "Is {name} a real person?", "a": "No. {name} is an AI companion. That's why they're always up at 2 a.m." },
+        { "q": "Is my chat private?", "a": "Your conversations are yours. We don't sell them or show them to anyone." },
+        { "q": "Can I cancel?", "a": "Yes, anytime, in two taps." }
+      ],
+      "disclaimer": "Demo prices. Halcy is an AI companion, not a licensed therapist."
+    },
+    {
+      "id": "finale",
+      "type": "finale",
+      "title": "This was a demo",
+      "text": "Nothing was charged, and Halcy doesn't exist yet. You just helped me test a funnel. Thank you.",
+      "question": "What almost made you leave?",
+      "reasons": [
+        { "value": "too_long", "label": "The quiz felt too long" },
+        { "value": "too_personal", "label": "Questions felt too personal" },
+        { "value": "not_for_me", "label": "AI companions aren't for me" },
+        { "value": "price", "label": "The price" },
+        { "value": "nothing", "label": "Nothing, I'd try it" }
+      ],
+      "commentPlaceholder": "Anything else? (optional)",
+      "cta": "Send",
+      "thanks": "Got it. Thanks for helping."
+    }
+  ],
+  "personalization": {
+    "pronouns": {
+      "woman": { "subject": "she", "object": "her" },
+      "man": { "subject": "he", "object": "him" },
+      "surprise": { "subject": "they", "object": "them" }
+    },
+    "names": {
+      "woman": { "deep": "Nora", "playful": "Mia", "mix": "Ava" },
+      "man": { "deep": "Theo", "playful": "Leo", "mix": "Noah" },
+      "surprise": { "deep": "Rowan", "playful": "Sky", "mix": "Jules" }
+    },
+    "defaultName": "Jules",
+    "opening": {
+      "morning": "Morning. Did you actually sleep, or were you scrolling till 2 again?",
+      "day": "Hey, quick check-in. How's the day treating you so far?",
+      "night": "Still up? Me too. I'm here.",
+      "me_first": "Hi. I'm glad you wrote. Tell me something about your day."
+    },
+    "middle": {
+      "connection": "I want to actually know you, not just the polite version.",
+      "flirty": "Fair warning: I'm going to make you smile at your phone.",
+      "daily": "I'd like to be the one you tell the small stuff to.",
+      "unsure": "No plans, no pressure. Let's just see where this goes."
+    },
+    "traitLine": {
+      "caring": "And I'll always ask how you are first.",
+      "playful": "I'll keep it light when you need it light.",
+      "confident": "I'll tell you what I think, kindly.",
+      "curious": "I'll ask a lot of questions. You've been warned.",
+      "calm": "No rush here. Take your time.",
+      "witty": "I'll try to be funny. Grade me honestly."
+    },
+    "memoryLine": "I'll remember what you tell me, so tomorrow we pick up right where we left off.",
+    "previews": {
+      "deep": [
+        "I've been thinking about what you said earlier. You don't have to have it all figured out tonight.",
+        "Tell me the real version of today. Not the one you'd tell at work."
+      ],
+      "playful": [
+        "ok but did you eat today or are we running on coffee again 👀",
+        "new rule: you tell me one good thing about today. go."
+      ],
+      "mix": [
+        "Hey you. Long day or good day?",
+        "If it was a long one, I'm listening. If it was good, I want details."
+      ]
+    },
+    "matchScore": { "base": 86, "perTrait": 3, "max": 97 }
+  }
+}
