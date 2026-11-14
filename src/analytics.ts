@@ -39,7 +39,6 @@ export function initAnalytics(funnelVersion: string) {
     opt_out_useragent_filter: qa,
   });
   ready = true;
-  if (qa) (window as unknown as { posthog: typeof posthog }).posthog = posthog;
   posthog.register({
     funnel_version: funnelVersion,
     utm_source: params.get("utm_source") ?? "direct",
@@ -57,16 +56,43 @@ export function track(event: string, props: Props = {}) {
   if (ready) posthog.capture(event, props);
 }
 
-const seen = new Set<string>();
-/** Fires "Step Viewed" once per step per page session, even after Back or re-render. */
+/** Session-scoped storage that never throws (private mode, blocked storage). */
+export const session = {
+  get<T>(key: string): T | undefined {
+    try {
+      const v = sessionStorage.getItem(key);
+      return v ? (JSON.parse(v) as T) : undefined;
+    } catch {
+      return undefined;
+    }
+  },
+  set(key: string, value: unknown) {
+    try {
+      sessionStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      /* the funnel still works, only refresh-safety is lost */
+    }
+  },
+};
+
+const seen = new Set<string>(session.get<string[]>("halcy_seen") ?? []);
+
+/** Fires an event only once per browser session: survives Back, re-renders and page refresh. */
+export function trackOnce(key: string, event: string, props: Props = {}) {
+  if (seen.has(key)) return;
+  seen.add(key);
+  session.set("halcy_seen", [...seen]);
+  track(event, props);
+}
+
 export function trackStepView(stepId: string, index: number, type: string) {
-  if (seen.has(stepId)) return;
-  seen.add(stepId);
-  track("Step Viewed", { step_id: stepId, step_index: index, step_type: type });
+  trackOnce(`step:${stepId}`, "Step Viewed", { step_id: stepId, step_index: index, step_type: type });
 }
 
 /**
  * A/B variant: ?variant= forces one for QA, otherwise the PostHog feature flag decides.
+ * Called when the user reaches the matching screen, right before the result, so only people
+ * who can actually see the difference are counted as exposed.
  * Falls back to control if flags don't load within 1.5 s, so nobody waits on a slow network.
  */
 export function getVariant(flag: string, variants: string[], control: string): Promise<string> {

@@ -12,7 +12,7 @@ Halcy doesn't exist. The paywall is a fake door: no payments, no stored emails.
 | Personalization | Companion name, preview texts, first message and chips are built from the answers. Rules are data in [`funnels/halcy.json`](funnels/halcy.json) |
 | Analytics | PostHog, events named in Amplitude style (`Quiz Started`, `Step Viewed`, `Paywall Viewed`…). Plan: [`docs/04-analytics-plan.md`](docs/04-analytics-plan.md) |
 | A/B test | Result screen with or without a "why this match" block, via PostHog experiment on flag `result-screen` |
-| Quality | Zod schema for the funnel JSON, 18 unit tests, end-to-end tests on mobile and desktop that also check every screen fires `Step Viewed` exactly once and no email reaches analytics |
+| Quality | Zod schema for the funnel JSON, 20 unit tests and 10 end-to-end tests on mobile and desktop: full paths for both variants, double taps, refresh, browser back, every screen firing `Step Viewed` exactly once, and no email address reaching analytics |
 
 ## How I worked
 

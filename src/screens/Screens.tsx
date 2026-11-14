@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { Answers, Funnel, StepOf } from "../engine/schema";
 import { chips, companionName, fill, firstMessage, matchedCount, previewMessages } from "../engine/personalize";
-import { track } from "../analytics";
+import { track, trackOnce } from "../analytics";
+import { cleanEmail, redact } from "../engine/text";
 
 type Ctx = {
   f: Funnel;
@@ -11,7 +12,7 @@ type Ctx = {
 };
 
 export function Landing({ step, next }: Ctx & { step: StepOf<"landing"> }) {
-  useEffect(() => track("Landing Viewed"), []);
+  useEffect(() => trackOnce("landing", "Landing Viewed"), []);
   return (
     <div className="screen">
       <div className="hero">
@@ -26,7 +27,7 @@ export function Landing({ step, next }: Ctx & { step: StepOf<"landing"> }) {
         className="btn"
         data-testid="cta"
         onClick={() => {
-          track("Quiz Started");
+          trackOnce("quiz_started", "Quiz Started");
           next();
         }}
       >
@@ -171,6 +172,17 @@ export function Loader({ step, f, answers, setAnswer, next }: Ctx & { step: Step
   const [asking, setAsking] = useState(false);
   const answered = useRef(answers.memory !== undefined);
 
+  // If the memory question is ignored for 8 s, carry on without an answer instead of waiting forever.
+  useEffect(() => {
+    if (!asking) return;
+    const t = setTimeout(() => {
+      answered.current = true;
+      track("Micro Commitment Skipped");
+      setAsking(false);
+    }, 8000);
+    return () => clearTimeout(t);
+  }, [asking]);
+
   useEffect(() => {
     if (asking) return;
     if (done >= step.rows.length) {
@@ -225,7 +237,7 @@ export function Result({ step, f, answers, next, variant }: Ctx & { step: StepOf
   const name = companionName(f, answers);
   const [typing, setTyping] = useState(true);
   useEffect(() => {
-    track("Result Viewed", { companion_name: name, result_variant: variant });
+    trackOnce("result", "Result Viewed", { companion_name: name, result_variant: variant });
     const t = setTimeout(() => setTyping(false), 1300);
     return () => clearTimeout(t);
   }, [name, variant]);
@@ -266,8 +278,6 @@ export function Result({ step, f, answers, next, variant }: Ctx & { step: StepOf
   );
 }
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
 export function Email({ step, f, answers, next }: Ctx & { step: StepOf<"email"> }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
@@ -280,8 +290,8 @@ export function Email({ step, f, answers, next }: Ctx & { step: StepOf<"email"> 
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
-          const v = value.trim();
-          if (!EMAIL.test(v)) {
+          const v = cleanEmail(value);
+          if (!v) {
             setError(step.error);
             track("Email Error");
             return;
@@ -324,7 +334,7 @@ export function Email({ step, f, answers, next }: Ctx & { step: StepOf<"email"> 
 
 export function Paywall({ step, f, answers, setAnswer, next }: Ctx & { step: StepOf<"paywall"> }) {
   const [plan, setPlan] = useState(step.defaultPlan);
-  useEffect(() => track("Paywall Viewed", { default_plan: step.defaultPlan }), [step.defaultPlan]);
+  useEffect(() => trackOnce("paywall", "Paywall Viewed", { default_plan: step.defaultPlan }), [step.defaultPlan]);
   return (
     <div className="screen">
       <h2>{fill(step.title, f, answers)}</h2>
@@ -406,7 +416,7 @@ export function Finale({ step, answers }: Ctx & { step: StepOf<"finale"> }) {
             track("Feedback Submitted", {
               reasons,
               paywall_outcome: typeof answers.paywall_outcome === "string" ? answers.paywall_outcome : undefined,
-              comment: comment.trim().slice(0, 500) || undefined,
+              comment: redact(comment.trim().slice(0, 500)) || undefined,
             });
             setSent(true);
           }}

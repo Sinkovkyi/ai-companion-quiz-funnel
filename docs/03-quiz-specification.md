@@ -25,7 +25,9 @@ The funnel lives in [`funnels/halcy.json`](../funnels/halcy.json) and is validat
 
 v1.1 cut a second self-identification statement (`open_up`): it didn't change anything the user saw. Flagged by the CRO review.
 
-Back is allowed on question screens. It skips over info, reward and loader screens.
+Back is allowed on question screens from the second question on, both as a button and as the browser / swipe back. It skips over info, reward and loader screens. Progress survives a page refresh (sessionStorage). A new screen ignores taps for its first 350 ms, so a double tap can't answer the next question. The memory question in the loader moves on by itself after 8 s.
+
+v1.2 fixes come from the QA review: double taps, refresh, browser back, duplicate top-of-funnel events, exposure timing, loader timeout, email validation, and an email address leaking through the feedback comment.
 
 ## Personalization rules
 

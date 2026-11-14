@@ -3,6 +3,7 @@ import raw from "../../funnels/halcy.json";
 import { funnelSchema, type Answers } from "../../src/engine/schema";
 import { chips, companionName, fill, firstMessage, matchedCount, previewMessages } from "../../src/engine/personalize";
 import { backIndex, canGoBack, questionCounter } from "../../src/engine/flow";
+import { cleanEmail, redact } from "../../src/engine/text";
 
 const f = funnelSchema.parse(raw);
 const ids = f.steps.map((s) => s.id);
@@ -109,13 +110,27 @@ describe("flow", () => {
     expect(backIndex(f.steps, at("pace"))).toBe(at("ask_how"));
   });
 
-  it("does not allow Back on landing, loader, result, paywall or finale", () => {
+  it("does not allow Back on landing, the first question, loader, result, paywall or finale", () => {
     for (const id of ["landing", "matching", "result", "paywall", "finale"]) expect(canGoBack(f.steps, at(id)), id).toBe(false);
     expect(canGoBack(f.steps, at("age"))).toBe(true);
+    expect(canGoBack(f.steps, at("intent"))).toBe(false);
   });
 
   it("counts only questions", () => {
     expect(questionCounter(f.steps, at("intent"))).toEqual({ current: 1, total: 8 });
     expect(questionCounter(f.steps, at("stat"))).toBeNull();
+  });
+});
+
+describe("text safety", () => {
+  it("removes email addresses from free text", () => {
+    expect(redact("email me at jane.doe@gmail.com please")).toBe("email me at [email] please");
+    expect(redact("no address here")).toBe("no address here");
+  });
+
+  it("accepts real emails and rejects malformed ones", () => {
+    for (const ok of ["a@b.co", "Tester.Name+x@Example.COM", "x@mail.example.co.uk"]) expect(cleanEmail(ok), ok).toBeTruthy();
+    for (const bad of ["a@b..com", "a@.co.uk", "a@b.com.", "x@-x.com", "a@b", "@b.com", "a b@c.com"]) expect(cleanEmail(bad), bad).toBeNull();
+    expect(cleanEmail("a@b.com\u200B")).toBe("a@b.com");
   });
 });

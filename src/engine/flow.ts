@@ -15,7 +15,8 @@ export function backIndex(steps: Step[], i: number): number {
 }
 
 export function canGoBack(steps: Step[], i: number): boolean {
-  return i > 0 && !NO_BACK.includes(steps[i].type);
+  // No Back from the first question: going back to the landing would count "Quiz Started" twice.
+  return i > 1 && !NO_BACK.includes(steps[i].type);
 }
 
 /** "3 / 9" style counter over question screens only. */

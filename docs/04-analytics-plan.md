@@ -8,21 +8,22 @@ PostHog (EU cloud, free tier). The event names follow Amplitude's "Object Action
 
 | Event | When | Properties |
 |---|---|---|
-| `Landing Viewed` | Landing renders | — |
-| `Quiz Started` | CTA on landing | — |
-| `Step Viewed` | Any screen renders (once per screen per session) | `step_id`, `step_index`, `step_type` |
+| `Landing Viewed` | Landing renders (once per session) | — |
+| `Quiz Started` | CTA on landing (once per session) | — |
+| `Step Viewed` | Any screen renders (once per screen per session, survives refresh) | `step_id`, `step_index`, `step_type` |
 | `Question Answered` | An answer is chosen | `step_id`, `answer` (string or list) |
-| `Back Clicked` | Back button | `from_step` |
+| `Back Clicked` | Back button or browser back | `from_step`, `via` |
 | `Micro Commitment Answered` | Memory question in the loader | `memory` |
-| `Result Viewed` | Result screen | `companion_name`, `result_variant` |
+| `Micro Commitment Skipped` | No answer within 8 s | — |
+| `Result Viewed` | Result screen (once per session) | `companion_name`, `result_variant` |
 | `Email Submitted` | Valid email | `email_domain` |
 | `Email Error` | Invalid email | — |
 | `Email Skipped` | Skip link | — |
-| `Paywall Viewed` | Paywall renders | `default_plan` |
+| `Paywall Viewed` | Paywall renders (once per session) | `default_plan` |
 | `Plan Selected` | Plan tapped | `plan` |
 | `Start Clicked` | "Start talking" on the paywall (fake door) | `plan` |
 | `Paywall Dismissed` | "Not now" | `plan` |
-| `Feedback Submitted` | Finale form | `reasons` (list), `paywall_outcome`, `comment` |
+| `Feedback Submitted` | Finale form | `reasons` (list), `paywall_outcome`, `comment` (email addresses replaced with `[email]`) |
 
 Super properties on every event: `funnel_version`, `result_variant`, `utm_source`, `utm_campaign`, `intent` (after Q1).
 
@@ -39,11 +40,11 @@ Super properties on every event: `funnel_version`, `result_variant`, `utm_source
 
 ## A/B test
 
-PostHog experiment on flag `result-screen`, variants `chat_preview` (control: companion + first message) and `match_score` (the same plus a "why this match" block), 50/50. Primary metric: Result Viewed → Start Clicked. The variant is also stored as a super property, so every event carries it. A `?variant=` URL parameter forces a variant for QA.
+PostHog experiment on flag `result-screen`, variants `chat_preview` (control: companion + first message) and `match_score` (the same plus a "why this match" block), 50/50. Primary metric: Result Viewed → Start Clicked. The flag is read on the matching screen, right before the result, so only people who reach the result count as exposed. From then on the variant is a super property on every event. A `?variant=` URL parameter forces a variant for QA.
 
 ## Privacy
 
-- Emails are never sent to analytics: only `email_domain`.
+- Emails are never sent to analytics: only `email_domain`. Free-text comments are scrubbed of email addresses before sending.
 - IP anonymization is on in the project.
 - No session recording for this test.
 - Testers are told it is a demo before they start.
