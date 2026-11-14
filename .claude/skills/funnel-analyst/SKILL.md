@@ -15,7 +15,7 @@ description: Use when reading funnel data from PostHog, checking data quality, e
 
 ## Questions to answer, in order
 
-1. Funnel: Quiz Started → intent answered → Result Viewed → Email Submitted → Paywall Viewed → Trial Intent Clicked.
+1. Funnel: Quiz Started → intent answered → Result Viewed → Paywall Viewed → Start Clicked. Email Submitted and Email Skipped as rates.
 2. Biggest drop-off step, and whether it is the same for every `utm_source`.
 3. Median time per step: a slow step is a confusing step.
 4. Answers distribution for `intent` and `pace`: who actually came.

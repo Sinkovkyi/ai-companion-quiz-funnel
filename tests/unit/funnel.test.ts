@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import raw from "../../funnels/halcy.json";
 import { funnelSchema, type Answers } from "../../src/engine/schema";
-import { chips, companionName, fill, firstMessage, matchScore, previewMessages } from "../../src/engine/personalize";
+import { chips, companionName, fill, firstMessage, matchedCount, previewMessages } from "../../src/engine/personalize";
 import { backIndex, canGoBack, questionCounter } from "../../src/engine/flow";
 
 const f = funnelSchema.parse(raw);
@@ -48,7 +48,7 @@ describe("funnel config", () => {
   it("has no unfilled placeholders other than {name}, {they}, {them}", () => {
     const text = JSON.stringify(raw);
     const placeholders = new Set(text.match(/\{[a-z_]+\}/g) ?? []);
-    for (const p of placeholders) expect(["{name}", "{they}", "{them}"]).toContain(p);
+    for (const p of placeholders) expect(["{name}", "{they}", "{them}", "{count}"]).toContain(p);
   });
 });
 
@@ -81,9 +81,21 @@ describe("personalization", () => {
     expect(previewMessages(f, a)).toEqual(f.personalization.previews.playful);
   });
 
-  it("keeps the match score within the cap", () => {
-    expect(matchScore(f, a)).toBe(92);
-    expect(matchScore(f, { traits: ["a", "b", "c", "d", "e"] })).toBeLessThanOrEqual(f.personalization.matchScore.max);
+  it("counts only answers that shape the companion", () => {
+    expect(matchedCount(a)).toBe(6);
+    expect(matchedCount({ ...a, age: "25-34", traits: [] })).toBe(5);
+  });
+
+  it("uses a strong 'ask how I am' answer and the pace in the message", () => {
+    const m = firstMessage(f, { ...a, ask_how: 5, pace: "slow" });
+    expect(m).toContain(f.personalization.likertLines.ask_how.line);
+    expect(m).not.toContain(f.personalization.traitLine.witty);
+    expect(m).toContain(f.personalization.paceLine.slow);
+    expect(firstMessage(f, { ...a, ask_how: 2 })).toContain(f.personalization.traitLine.witty);
+  });
+
+  it("never writes an empty sentence for a pace with no line", () => {
+    expect(firstMessage(f, { ...a, pace: "natural" })).not.toMatch(/\s{2}|\s$/);
   });
 
   it("shows trait and time labels as chips", () => {
@@ -93,7 +105,7 @@ describe("personalization", () => {
 
 describe("flow", () => {
   it("skips info, reward and loader screens on Back", () => {
-    expect(backIndex(f.steps, at("open_up"))).toBe(at("when"));
+    expect(backIndex(f.steps, at("ask_how"))).toBe(at("when"));
     expect(backIndex(f.steps, at("pace"))).toBe(at("ask_how"));
   });
 
@@ -103,7 +115,7 @@ describe("flow", () => {
   });
 
   it("counts only questions", () => {
-    expect(questionCounter(f.steps, at("intent"))).toEqual({ current: 1, total: 9 });
+    expect(questionCounter(f.steps, at("intent"))).toEqual({ current: 1, total: 8 });
     expect(questionCounter(f.steps, at("stat"))).toBeNull();
   });
 });

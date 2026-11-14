@@ -34,26 +34,28 @@ Demo prices, chosen to look like the category, not taken from any real app:
 | Plan | Price | Framing |
 |---|---|---|
 | 1 week | $6.99 | then $19.99 / month |
-| 1 month | $19.99 | default, "Most picked" |
+| 1 month | $19.99 | default, "Best to start" (no fake social proof: the app has no users) |
 | 3 months | $39.99 | "Save 33%" |
 
-Risk reversal: cancel anytime. FAQ under the plans answers the three questions I expect: is it a real person, is my chat private, can I cancel.
+Renewal terms sit next to each price. FAQ under the plans answers the four questions I expect: is it a real person, is my chat private, can I cancel, and what if I'm going through something heavy (988, Halcy is not a crisis service). A "Not now" link lets people leave the paywall without pretending to buy.
 
 ## The funnel as a business
 
 What I would watch, in this order:
 1. **Quiz start → paywall view.** Is the quiz too long or too personal for this traffic?
-2. **Paywall view → trial intent.** Does the result make people want to reply?
+2. **Result view → Start click.** Does the result make people want to reply?
 3. **Trial → first renewal** (real product only). The metric I'd judge pricing tests on. A cheap trial can win on starts and lose on money.
 
 Guardrails: refund rate, chargebacks, complaints that the companion felt fake.
 
 ## The first test
 
-**Hypothesis:** a result screen that shows the companion's first message (chat preview) makes more people click "Start" on the paywall than a result screen that shows a compatibility score ("94% match").
+**Hypothesis:** explaining *why* this companion was picked ("Matched on 8 of your answers" + the answers as chips) makes more people click "Start" than showing the companion and their first message alone.
 
-- Primary metric: Paywall Viewed → Trial Intent Clicked.
-- Guardrail: Email Submitted rate (the chat preview must not scare people off before the email).
+Both variants show the first message, so the explanation block is the only difference. The count is honest: it is the number of answers that really changed the companion's name or message.
+
+- Primary metric: Result Viewed → Start Clicked. It starts at the first screen where the variant is visible, so the email step can't make the groups different.
+- Guardrails: Email Submitted rate, Paywall Dismissed rate, and the "match felt generic" feedback reason by variant.
 - Split: 50/50 through a PostHog feature flag `result-screen`.
 
 With 20–50 testers this test can't pick a winner. To detect a +10 p.p. lift from a 20% baseline at α = 0.05 and 80% power you need about 290 people per group. I run it anyway to show the setup works end to end, and I use the real data for step-by-step drop-off, not for a winner.

@@ -34,8 +34,12 @@ export function initAnalytics(funnelVersion: string) {
     disable_session_recording: true,
     person_profiles: "identified_only",
     persistence: "localStorage",
+    // PostHog drops events from headless browsers. QA runs (?qa=1) are automated,
+    // so they opt out of that filter and are tagged qa=1 instead, to be excluded later.
+    opt_out_useragent_filter: qa,
   });
   ready = true;
+  if (qa) (window as unknown as { posthog: typeof posthog }).posthog = posthog;
   posthog.register({
     funnel_version: funnelVersion,
     utm_source: params.get("utm_source") ?? "direct",

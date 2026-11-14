@@ -83,7 +83,7 @@ const result = z.object({
   eyebrow: z.string(),
   typing: z.string(),
   scoreLabel: z.string(),
-  scoreNote: z.string(),
+  reasonsLabel: z.string(),
   cta: z.string(),
 });
 
@@ -96,6 +96,7 @@ const email = z.object({
   cta: z.string(),
   error: z.string(),
   note: z.string(),
+  skip: z.string(),
 });
 
 const paywall = z.object({
@@ -107,6 +108,7 @@ const paywall = z.object({
     .array(z.object({ id: z.string(), label: z.string(), price: z.string(), sub: z.string(), badge: z.string().optional() }))
     .min(1),
   cta: z.string(),
+  dismiss: z.string(),
   cancelNote: z.string(),
   faq: z.array(z.object({ q: z.string(), a: z.string() })),
   disclaimer: z.string(),
@@ -146,9 +148,10 @@ export const funnelSchema = z
       opening: byKey,
       middle: byKey,
       traitLine: byKey,
+      paceLine: byKey,
+      likertLines: z.record(z.string(), z.object({ min: z.number().int().min(1).max(5), line: z.string() })),
       memoryLine: z.string(),
       previews: z.record(z.string(), z.array(z.string()).min(1)),
-      matchScore: z.object({ base: z.number(), perTrait: z.number(), max: z.number().max(100) }),
     }),
   })
   .superRefine((f, ctx) => {

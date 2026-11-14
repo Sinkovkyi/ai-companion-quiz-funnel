@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Answers, Funnel, StepOf } from "../engine/schema";
-import { chips, companionName, fill, firstMessage, matchScore, previewMessages } from "../engine/personalize";
+import { chips, companionName, fill, firstMessage, matchedCount, previewMessages } from "../engine/personalize";
 import { track } from "../analytics";
 
 type Ctx = {
@@ -229,6 +229,8 @@ export function Result({ step, f, answers, next, variant }: Ctx & { step: StepOf
     const t = setTimeout(() => setTyping(false), 1300);
     return () => clearTimeout(t);
   }, [name, variant]);
+  // The A/B difference is only the "why this match" block. Both variants show the first message.
+  const explain = variant === "match_score";
   const tags = chips(f, answers);
   return (
     <div className="screen">
@@ -236,25 +238,24 @@ export function Result({ step, f, answers, next, variant }: Ctx & { step: StepOf
       <div className="card">
         <div className="who">
           <div className="ava" aria-hidden="true">{name[0]}</div>
-          <div>
-            <h2>{name}</h2>
-            {variant === "match_score" && (
-              <span className="lead">
-                <strong className="score">{matchScore(f, answers)}%</strong> {step.scoreLabel}
-              </span>
+          <h2>{name}</h2>
+        </div>
+        {explain && (
+          <div className="explain" data-testid="match-explain">
+            <strong>{step.scoreLabel.replace("{count}", String(matchedCount(answers)))}</strong>
+            {tags.length > 0 && (
+              <>
+                <span className="src">{step.reasonsLabel}</span>
+                <div className="chips">
+                  {tags.map((t) => (
+                    <span key={t} className="chip">{t}</span>
+                  ))}
+                </div>
+              </>
             )}
           </div>
-        </div>
-        {tags.length > 0 && (
-          <div className="chips">
-            {tags.map((t) => (
-              <span key={t} className="chip">{t}</span>
-            ))}
-          </div>
         )}
-        {variant === "match_score" ? (
-          <p className="lead">{step.scoreNote}</p>
-        ) : typing ? (
+        {typing ? (
           <div className="typing">{fill(step.typing, f, answers)}</div>
         ) : (
           <div className="bubble" data-testid="first-message">{firstMessage(f, answers)}</div>
@@ -307,12 +308,21 @@ export function Email({ step, f, answers, next }: Ctx & { step: StepOf<"email"> 
         <p className="err" role="alert">{error}</p>
         <button className="btn" type="submit">{step.cta}</button>
       </form>
+      <button
+        className="link"
+        onClick={() => {
+          track("Email Skipped");
+          next();
+        }}
+      >
+        {step.skip}
+      </button>
       <p className="note">{step.note}</p>
     </div>
   );
 }
 
-export function Paywall({ step, f, answers, next }: Ctx & { step: StepOf<"paywall"> }) {
+export function Paywall({ step, f, answers, setAnswer, next }: Ctx & { step: StepOf<"paywall"> }) {
   const [plan, setPlan] = useState(step.defaultPlan);
   useEffect(() => track("Paywall Viewed", { default_plan: step.defaultPlan }), [step.defaultPlan]);
   return (
@@ -344,11 +354,23 @@ export function Paywall({ step, f, answers, next }: Ctx & { step: StepOf<"paywal
         className="btn"
         data-testid="start"
         onClick={() => {
-          track("Trial Intent Clicked", { plan });
+          track("Start Clicked", { plan });
+          setAnswer("paywall_outcome", "start");
           next();
         }}
       >
         {step.cta}
+      </button>
+      <button
+        className="link"
+        data-testid="dismiss"
+        onClick={() => {
+          track("Paywall Dismissed", { plan });
+          setAnswer("paywall_outcome", "dismiss");
+          next();
+        }}
+      >
+        {step.dismiss}
       </button>
       <p className="note">{step.cancelNote}</p>
       <div className="faq">
@@ -364,10 +386,11 @@ export function Paywall({ step, f, answers, next }: Ctx & { step: StepOf<"paywal
   );
 }
 
-export function Finale({ step }: Ctx & { step: StepOf<"finale"> }) {
-  const [reason, setReason] = useState("");
+export function Finale({ step, answers }: Ctx & { step: StepOf<"finale"> }) {
+  const [reasons, setReasons] = useState<string[]>([]);
   const [comment, setComment] = useState("");
   const [sent, setSent] = useState(false);
+  const toggle = (v: string) => setReasons((r) => (r.includes(v) ? r.filter((x) => x !== v) : [...r, v]));
   return (
     <div className="screen">
       <h2>{step.title}</h2>
@@ -379,8 +402,12 @@ export function Finale({ step }: Ctx & { step: StepOf<"finale"> }) {
           className="opts"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!reason) return;
-            track("Feedback Submitted", { reason, comment: comment.trim().slice(0, 500) || undefined });
+            if (reasons.length === 0) return;
+            track("Feedback Submitted", {
+              reasons,
+              paywall_outcome: typeof answers.paywall_outcome === "string" ? answers.paywall_outcome : undefined,
+              comment: comment.trim().slice(0, 500) || undefined,
+            });
             setSent(true);
           }}
         >
@@ -389,9 +416,9 @@ export function Finale({ step }: Ctx & { step: StepOf<"finale"> }) {
             <button
               type="button"
               key={r.value}
-              className={`opt ${reason === r.value ? "sel" : ""}`}
-              aria-pressed={reason === r.value}
-              onClick={() => setReason(r.value)}
+              className={`opt ${reasons.includes(r.value) ? "sel" : ""}`}
+              aria-pressed={reasons.includes(r.value)}
+              onClick={() => toggle(r.value)}
             >
               {r.label}
             </button>
@@ -405,7 +432,7 @@ export function Finale({ step }: Ctx & { step: StepOf<"finale"> }) {
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />
-          <button className="btn" type="submit" disabled={!reason}>{step.cta}</button>
+          <button className="btn" type="submit" disabled={reasons.length === 0}>{step.cta}</button>
         </form>
       )}
     </div>

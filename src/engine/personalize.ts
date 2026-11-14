@@ -27,10 +27,15 @@ export function fill(text: string, f: Funnel, a: Answers): string {
 export function firstMessage(f: Funnel, a: Answers): string {
   const p = f.personalization;
   const traits = Array.isArray(a.traits) ? a.traits : [];
+  const likert = Object.entries(p.likertLines)
+    .filter(([id, rule]) => typeof a[id] === "number" && (a[id] as number) >= rule.min)
+    .map(([, rule]) => rule.line);
   const parts = [
     p.opening[str(a, "when") ?? ""] ?? p.opening.me_first,
     p.middle[str(a, "intent") ?? ""] ?? p.middle.unsure,
-    traits[0] ? p.traitLine[traits[0]] : undefined,
+    // A strong "ask how I am" answer replaces the trait line: it says the same thing, more personally.
+    likert[0] ?? (traits[0] ? p.traitLine[traits[0]] : undefined),
+    p.paceLine[str(a, "pace") ?? ""],
     a.memory === "yes" ? p.memoryLine : undefined,
   ];
   return parts.filter(Boolean).join(" ");
@@ -40,10 +45,14 @@ export function previewMessages(f: Funnel, a: Answers): string[] {
   return f.personalization.previews[str(a, "style") ?? "mix"] ?? f.personalization.previews.mix ?? [];
 }
 
-export function matchScore(f: Funnel, a: Answers): number {
-  const { base, perTrait, max } = f.personalization.matchScore;
-  const traits = Array.isArray(a.traits) ? a.traits.length : 0;
-  return Math.min(max, base + traits * perTrait);
+/** Answers that actually change who the companion is or what they say. Shown honestly as a count. */
+const MATCH_INPUTS = ["intent", "partner", "traits", "style", "when", "ask_how", "pace", "memory"];
+
+export function matchedCount(a: Answers): number {
+  return MATCH_INPUTS.filter((k) => {
+    const v = a[k];
+    return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== "";
+  }).length;
 }
 
 /** Labels of chosen options, for chips on the result screen. */
